@@ -67,20 +67,20 @@ public class StudentMain {
 			}
 		}
 		return list;
+
 	}
 
 	// method to fetch selected data
 	public static Student hibernateFetchSingle(int roll_num) {
-		scanner = new Scanner(System.in);
-		roll_num = scanner.nextInt();
 		Student student = null;
 		try {
 			factory = Persistence.createEntityManagerFactory("emp");
 			manager = factory.createEntityManager();
 			String queryFetchSingle = "from Student where roll= :r";
 			Query query = manager.createQuery(queryFetchSingle);
-			query.setParameter(1, roll_num);
+			query.setParameter("r", roll_num);
 			student = (Student) query.getSingleResult();
+			int result = query.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -98,23 +98,19 @@ public class StudentMain {
 
 	// method to update data
 	public static void hibernateUpdate(int roll_num, String name, long contact, int standard) {
-		scanner = new Scanner(System.in);
-		roll_num = scanner.nextInt();
-		name = scanner.next();
-		contact = scanner.nextLong();
-		standard = scanner.nextInt();
 		Student student = null;
 		try {
 			factory = Persistence.createEntityManagerFactory("emp");
 			manager = factory.createEntityManager();
 			transaction = manager.getTransaction();
 			transaction.begin();
-			String queryUpdate = "update Student set name= :name, contact= :contact, standard= :standard where roll= :roll";
+			String queryUpdate = "update Student set name= :name, "
+					+ "contact= :contact, standard= :standard where roll= :roll";
 			Query query = manager.createQuery(queryUpdate);
 			query.setParameter("name", name);
-			query.setParameter("contact", Long.parseLong(Long.toString(contact)));
-			query.setParameter("standard", Integer.parseInt(Integer.toString(standard)));
-			query.setParameter("roll", Integer.parseInt(Integer.toString(roll_num)));
+			query.setParameter("contact", contact);
+			query.setParameter("standard", standard);
+			query.setParameter("roll", roll_num);
 			int result = query.executeUpdate();
 			transaction.commit();
 		} catch (Exception e) {
@@ -135,8 +131,6 @@ public class StudentMain {
 
 	// method to delete
 	public static void hibernateDelete(int roll_num) {
-		scanner = new Scanner(System.in);
-		roll_num = scanner.nextInt();
 		try {
 			factory = Persistence.createEntityManagerFactory("emp");
 			manager = factory.createEntityManager();
@@ -144,7 +138,7 @@ public class StudentMain {
 			transaction.begin();
 			String queryDelete = "delete from Student where roll= :r";
 			Query query = manager.createQuery(queryDelete);
-			query.setParameter("r", Integer.parseInt(Integer.toString(roll_num)));
+			query.setParameter("r", roll_num);
 			int result = query.executeUpdate();
 			transaction.commit();
 		} catch (Exception e) {
@@ -163,48 +157,67 @@ public class StudentMain {
 		}
 	}
 
-	public static void main(String[] args) {
-		/*
-		 * List<Student> fetchAll= StudentMain.hibernateFetchAll(); for (Student student
-		 * : fetchAll) { System.out.println(student); }
-		 */
+	public static String display() {
+		System.out.println("Press 1 to insert the data\n" + "Press 2 to display all data\n"
+				+ "Press 3 to display by Roll\n" + "Press 4 to update data by roll\n" + "Press 5 to delete by roll\n"
+				+ "Press 6 to Quit the program");
+		String string = scanner.next().toLowerCase();
+		return string;
+	}
 
-		/*
-		 * int roll = scanner.nextInt(); Student fetchByRoll =
-		 * StudentMain.hibernateFetchSingle(roll); System.out.println("Name: " +
-		 * fetchByRoll.getName()); System.out.println("Contact: " +
-		 * fetchByRoll.getContact()); System.out.println("Standard: " +
-		 * fetchByRoll.getStandard());
-		 */
+	public static void main(String[] args) {
 		while (!exit) {
-			System.out.println(
-					"Press 1 to insert the data\nPress 2 to display all data\nPress 3 to display by Roll\nPress 4 to update data by roll\nPress 5 to delete by roll\nPress 6 to Quit the program");
-					String string= scanner.next().toLowerCase();
-					switch(string) {
-					case "1": 
-						System.out.println("Enter the roll, name, contact, standard");
-						stdRoll=scanner.nextInt();
-						stdName=scanner.next();
-						stdContact=scanner.nextLong();
-						stdStandard=scanner.nextInt();
-						StudentMain.hibernateInsert(stdRoll, stdName, stdContact, stdStandard);
-						break;
-					case "2":
-						
-						break;
-					case "3":
-						
-						break;
-					case "4":
-						
-						break;
-					case "5":
-						
-						break;
-					case "6":
-						
-						break;
-					}
+			String string = display();
+			switch (string) {
+			case "1":
+				System.out.println("Enter the roll, name, contact, standard");
+				stdRoll = scanner.nextInt();
+				stdName = scanner.next();
+				stdContact = scanner.nextLong();
+				stdStandard = scanner.nextInt();
+				StudentMain.hibernateInsert(stdRoll, stdName, stdContact, stdStandard);
+				System.out.println("Data inserted succesfully");
+				break;
+			case "2":
+				List<Student> list = StudentMain.hibernateFetchAll();
+				for (Student student : list) {
+					System.out.println(student);
+				}
+				break;
+			case "3":
+				System.out.println("Enter the roll number....");
+				int roll = scanner.nextInt();
+				Student student = StudentMain.hibernateFetchSingle(roll);
+				System.out.println("Name: " + student.getName());
+				System.out.println("Contact: " + student.getContact());
+				System.out.println("Standard: " + student.getStandard());
+				break;
+			case "4":
+				System.out.println("Enter the roll number:");
+				int rollUpdate=scanner.nextInt();
+				System.out.println("Set the name: ");
+				String newName=scanner.next();
+				System.out.println("Set the contact: ");
+				long newContact=scanner.nextLong();
+				System.out.println("Set the standard: ");
+				int newStandard=scanner.nextInt();
+				StudentMain.hibernateUpdate(rollUpdate, newName, newContact, newStandard);
+				System.out.println("Data updated successfully....");
+				break;
+			case "5":
+				System.out.println("Enter the roll number....");
+				int rollDelete=scanner.nextInt();
+				StudentMain.hibernateDelete(rollDelete);
+				System.out.println("Data deleted successfully....");
+				break;
+			case "6":
+				System.out.println("Exited the application");
+				exit = true;
+				break;
+			default:
+				System.err.println("Enter the correct input....");
+				break;
+			}
 		}
 	}
 
